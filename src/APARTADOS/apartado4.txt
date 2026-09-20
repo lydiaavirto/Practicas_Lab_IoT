@@ -42,6 +42,7 @@ void loop() {
 
     if (c!='\n'){
       data.concat(c);
+      Serial.print();  //escribe en el terminal el comando para ver que pone
     }
 
     else{
