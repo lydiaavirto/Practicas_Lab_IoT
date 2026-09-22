@@ -67,6 +67,7 @@ void loop() {
           Serial.println("Temporizador detenido");
         }
       }
+      // TERCER CASO --> PWM
       else if(data.startsWith("PWM(")&&data.endsWith(")")){
         String xPWM = data.substring(4, data.length()-1);
         int x = xPWM.toInt();

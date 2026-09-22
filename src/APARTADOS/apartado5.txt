@@ -1,0 +1,75 @@
+** PARTE DEL ARDUINO NANO  **
+
+#include <Arduino.h>
+#include <Wire.h>
+
+const uint8_t DIRECCION_I2C = 0x08;
+
+void setup() {
+  Serial.begin(115200);
+  while(!Serial);
+  Wire.begin(); // Inicializa I2C como Master (SDA=A4, SCL=A5)
+}
+
+void loop() {
+  // Enviar comando para encender el LED ('1')
+  Wire.beginTransmission(DIRECCION_I2C);  // tramsnite al ESP por la direccion 0x08
+  Wire.write('1');  // manda el valor para encender el led
+  Wire.endTransmission();   // deja de transmitir
+
+  delay(2000);
+
+  // Enviar comando para apagar el LED ('0')
+  Wire.beginTransmission(DIRECCION_I2C);   // tramsnite al ESP por la direccion 0x08
+  Wire.write('0');   // manda el valor para apagar el led
+  Wire.endTransmission();    // deja de transmitir
+
+  delay(2000);
+
+  // sacado de: https://docs.arduino.cc/tutorials/nano-33-ble-sense/i2c/
+}
+
+
+
+** PARTE DEL ESP32 **
+#include <Arduino.h>
+#include <Wire.h>
+
+#define I2C_DEV_ADDR 0x08  // Dirección I2C asignada al ESP32-S3
+#define LED_PIN 10         // Pin GPIO donde está conectado el LED
+
+// Función que se ejecuta automáticamente cuando el Maestro envía datos
+void receiveEvent(int howMany) {
+  while (Wire.available()) {
+    char c = Wire.read();  // Lee el carácter recibido por I2C
+    
+    if (c == '1') {
+      digitalWrite(LED_PIN, HIGH);  // Enciende el LED
+      Serial.println("Comando recibido: 1 -> LED encendido");
+    } 
+    else if (c == '0') {
+      digitalWrite(LED_PIN, LOW);   // Apaga el LED
+      Serial.println("Comando recibido: 0 -> LED apagado");
+    }
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
+
+  // Inicializa el bus I2C en modo esclavo con la dirección 0x08
+  Wire.begin(I2C_DEV_ADDR);
+  
+  // Registrar la función que atenderá las interrupciones de recepción
+  Wire.onReceive(receiveEvent);
+  
+  Serial.println("ESP32-S3 Esclavo I2C listo...");
+}
+
+void loop() {
+  // El loop se deja libre o con un pequeño retardo.
+  // La recepción de datos se maneja por eventos/interrupciones.
+  delay(100);
+}
