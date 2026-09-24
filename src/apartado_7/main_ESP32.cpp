@@ -1,141 +1,126 @@
 /**
- * @file arduinoNano_I2C.cpp
- * @brief Práctica 1 - Apartado 7: PLACA 1 Maestro I2C (Arduino Nano 33 BLE).
- * @details Implementa la captura a demanda de la IMU LSM9DS1 (5 muestras tomadas cada 200 ms durante 1 segundo).
- *          Una vez acumuladas las muestras, transmite el bloque de datos completo de 180 bytes por I2C
- *          a la PLACA 2 (ESP32-S3 con dirección 0x08).
+ * @file esp32_I2C.cpp
+ * @brief Práctica 1 - Apartado 7: PLACA 2 Esclavo I2C (ESP32-S3).
+ * @details Configura la ESP32-S3 como esclavo I2C en la dirección 0x08.
+ *          Recibe por interrupción ('onReceive') un bloque completo de 180 bytes enviado por 
+ *          el Maestro (5 muestras de la IMU x 36 bytes). Al recibir el bloque, muestra los datos 
+ *          organizados por la consola serie y activa un LED indicador durante exactamente 1 segundo.
  * @author Lydia Virto Zardoya
  * @date 24/09/2026
  */
 
 #include <Arduino.h>
-#include "BBTimer.h"
-#include <mbed.h>
-#include <Arduino_LSM9DS1.h>
+#include <Wire.h>
 
-/** @brief Dirección I2C del dispositivo esclavo (ESP32-S3) */
+/** @brief Dirección I2C asignada a la ESP32-S3 en el bus */
 const uint8_t DIRECCION_I2C = 0x08;
 
-/** @brief Instancia del temporizador hardware BB_TIMER3 para el control del muestreo a 200 ms */
-BBTimer timerMuestreo(BB_TIMER3);
+/** @brief Pin GPIO asignado a la línea SDA del bus I2C */
+const uint8_t PIN_SDA = 8;
 
-/** @brief Volatile flag que indica el momento de leer la IMU */
-volatile bool flagLectura = false;
+/** @brief Pin GPIO asignado a la línea SCL del bus I2C */
+const uint8_t PIN_SCL = 9;
 
-/** @brief Volatile flag que indica el fin de la ráfaga de 1 segundo (5 muestras) para enviar por I2C */
-volatile bool flagEscritura = false;
-
-/** @brief Contador de muestras capturadas en la ráfaga actual (0 a 4) */
-volatile uint8_t nMuestra = 0;
-
-/** @brief Estado de la captura a demanda (true = capturando datos) */
-bool capturando = false;
+/** @brief Pin GPIO conectado al LED indicador de recepción de datos */
+const uint8_t PIN_LED = 10;
 
 /**
  * @struct lecturaIMU
- * @brief Estructura de datos para almacenar una captura completa de la IMU de 9 DoF (36 bytes)[cite: 1].
+ * @brief Estructura de datos idéntica a la del Maestro para desempaquetar la trama de la IMU (36 bytes).
  */
 struct lecturaIMU {
-  float ax, ay, az; //  Acelerómetro  
-  float gx, gy, gz; //  Giroscopio  
-  float mx, my, mz; //  Magnetómetro   
+  float ax, ay, az; // Acelerómetro
+  float gx, gy, gz; // Giroscopio 
+  float mx, my, mz; // Magnetómetro
 };
 
-/** @brief Array para almacenar 5 muestras completas (5 x 36 bytes = 180 bytes en total) */
+/** @brief Array de recepción para alojar las 5 muestras del bloque I2C (5 x 36 bytes = 180 bytes) */
 lecturaIMU sensorData[5];
 
-/**
- * @brief Rutina de servicio de la interrupción (Callback) del temporizador.
- * @details Se activa cada 200 ms durante la captura. Incrementa el contador de muestras 
- *          y activa la bandera de transmisión al alcanzar 5 muestras (1 segundo).
- */
-void callbackTimer() {
-  flagLectura = true;  
-  nMuestra++;
+/** @brief Volatile flag que indica la recepción correcta de la ráfaga completa por I2C */
+volatile bool flagRecibido = false;
 
-  if (nMuestra >= 5) {   
-    flagEscritura = true;   
-    nMuestra = 0;
+/**
+ * @brief Rutina de servicio de la interrupción (ISR) de recepción I2C.
+ * @details Se activa automáticamente al recibir datos en el bus I2C.
+ *          Verifica que la cantidad de bytes coincida con el tamaño esperado del array (180 bytes).
+ *          Si la longitud es correcta, vuelca la trama a la estructura y activa la bandera 'flagRecibido'.
+ * @param bytesRecibidos Número de bytes transferidos por el Maestro I2C.
+ */
+void recibirDatosI2C(int bytesRecibidos) {
+  // Verificar que recibimos exactamente los 180 bytes (5 muestras * 36 bytes)
+  if (bytesRecibidos == sizeof(sensorData)) {
+    Wire.readBytes((uint8_t*)sensorData, bytesRecibidos);
+    flagRecibido = true;
+  } else {
+    // Si la trama no encaja con la estructura esperada, limpiar el buffer de entrada
+    while (Wire.available()) {
+      Wire.read();
+    }
   }
 }
 
 /**
- * @brief Configuración inicial del sistema, puerto serie, I2C Maestro e IMU.
- * @details Inicializa la consola serie a 115200 baudios, arranca la interfaz I2C Maestro (Wire),
- *          comprueba la conexión con la IMU LSM9DS1 y programa el temporizador a 200.000 µs (200 ms).
+ * @brief Configuración inicial del hardware, puerto serie, pines de comunicación e interfaz esclava I2C.
+ * @details Inicializa la consola serie a 115200 baudios, configura el pin del LED como salida,
+ *          inicia la librería Wire en modo esclavo (SDA=GPIO8, SCL=GPIO9, 100 kHz) y registra la ISR 'recibirDatosI2C'.
  */
 void setup() {
   Serial.begin(115200);
-  while (!Serial);
-  Wire.begin(); // Inicializa I2C como Master (SDA=A4, SCL=A5)
 
-  if (!IMU.begin()) {
-    Serial.println("¡Error al inicializar el sensor LSM9DS1!");
-    while (1);
-  }
+  // Configuración del LED indicador
+  pinMode(PIN_LED, OUTPUT);
+  digitalWrite(PIN_LED, LOW);
 
-  // Configura el timer para dispararse cada 200 ms (200.000 µs)
-  timerMuestreo.setupTimer(200000, callbackTimer);
+  // Inicializar bus I2C en modo Esclavo (dirección 0x08, SDA=8, SCL=9, 100 kHz)
+  Wire.begin(DIRECCION_I2C, PIN_SDA, PIN_SCL, 100000);
+  Wire.onReceive(recibirDatosI2C);
 
   Serial.println("==================================================");
-  Serial.println("PLACA 1 Lista.");
-  Serial.println("Escribe '1' en el Monitor Serie para capturar 1s de IMU...");
+  Serial.println("PLACA 2 (ESP32-S3 Esclavo) Lista.");
+  Serial.println("Esperando ráfaga de datos I2C desde el Maestro...");
   Serial.println("==================================================");
 }
 
 /**
- * @brief Bucle principal de ejecución de la PLACA 1.
- * @details Atiende las órdenes del usuario por la UART para iniciar la captura a demanda,
- *          gestiona las lecturas de los 9 sensores cada 200 ms y envía por I2C la estructura 
- *          binaria completa de 180 bytes a la PLACA 2 tras completar el segundo.
+ * @brief Bucle principal de ejecución de la PLACA 2.
+ * @details Al activarse la bandera 'flagRecibido':
+ *          1. Enciende el LED indicador.
+ *          2. Formatea e imprime por consola las 5 muestras de la IMU (Acelerómetro, Giroscopio y Magnetómetro).
+ *          3. Mantiene el LED encendido exactamente durante 1000 ms antes de apagarlo.
  */
 void loop() {
-  // 1. Recepción de comando del usuario por UART para iniciar la captura a demanda
-  if (Serial.available() > 0 && !capturando) {
-    char c = Serial.read(); // Leemos el primer carácter (p. ej. '1')
-    Serial.print("\n>>> Comando recibido: "); 
-    Serial.println(c);
+  if (flagRecibido) {
+    flagRecibido = false;
 
-    // Vaciamos el resto del buffer de la UART para descartar \r y \n
-    while (Serial.available() > 0) Serial.read();
+    // 1. Encender el LED indicador
+    digitalWrite(PIN_LED, HIGH);
+    unsigned long tiempoInicioLED = millis();
 
-    nMuestra = 0;
-    capturando = true;
-    timerMuestreo.timerStart();
-  }
+    // 2. Desplegar los datos de las 5 muestras formateadas por el Monitor Serie
+    Serial.println("\n================ RÁFAGA RECIBIDA POR I2C ================");
+    for (uint8_t i = 0; i < 5; i++) {
+      Serial.print("Muestra #"); Serial.print(i + 1); Serial.print("]:");
 
-  // 2. Tarea de muestreo de la IMU (Cada 200 ms)
-  if (flagLectura) {
-    flagLectura = false;
-    uint8_t posActual = (nMuestra == 0) ? 4 : (nMuestra - 1);
+      // Acelerómetro
+      Serial.print(" Accel [g]  -> X: "); Serial.print(sensorData[i].ax, 2);
+      Serial.print(" | Y: "); Serial.print(sensorData[i].ay, 2);
+      Serial.print(" | Z: "); Serial.print(sensorData[i].az, 2);
 
-    if (IMU.accelerationAvailable()) {
-      IMU.readAcceleration(sensorData[posActual].ax, sensorData[posActual].ay, sensorData[posActual].az);
+      // Giróscopo
+      Serial.print(" Gyro  [dps] -> X: "); Serial.print(sensorData[i].gx, 2);
+      Serial.print(" | Y: "); Serial.print(sensorData[i].gy, 2);
+      Serial.print(" | Z: "); Serial.print(sensorData[i].gz, 2);
+
+      // Magnetómetro
+      Serial.print(" Mag   [uT]  -> X: "); Serial.print(sensorData[i].mx, 2);
+      Serial.print(" | Y: "); Serial.print(sensorData[i].my, 2);
+      Serial.print(" | Z: "); Serial.println(sensorData[i].mz, 2);
     }
-    if (IMU.gyroscopeAvailable()) {
-      IMU.readGyroscope(sensorData[posActual].gx, sensorData[posActual].gy, sensorData[posActual].gz);
-    }
-    if (IMU.magneticFieldAvailable()) {
-      IMU.readMagneticField(sensorData[posActual].mx, sensorData[posActual].my, sensorData[posActual].mz);
-    }
-  }
+    Serial.println("========================================================\n");
 
-  // 3. Tarea de transmisión I2C (Al completar 1s / 5 muestras)
-  if (flagEscritura) {
-    flagEscritura = false;
-
-    timerMuestreo.timerStop();
-    capturando = false;
-
-    // Transmisión del bloque binario completo (180 bytes) a la PLACA 2 (0x08)
-    Wire.beginTransmission(DIRECCION_I2C);
-    Wire.write((uint8_t*)sensorData, sizeof(sensorData));
-    uint8_t estado = Wire.endTransmission();
-
-    if (estado == 0) {
-      Serial.println(">>> Envío I2C exitoso.");
-    } else {
-      Serial.print(">>> Error I2C: "); Serial.println(estado);
-    }
+    // Mantener el LED encendido exactamente 1 segundo (1000 ms) sin bloquear interrupciones
+    while (millis() - tiempoInicioLED < 1000);
+    digitalWrite(PIN_LED, LOW); // Apagar LED
   }
 }
