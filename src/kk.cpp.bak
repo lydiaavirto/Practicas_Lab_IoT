@@ -1,0 +1,97 @@
+#include <Arduino.h>
+#include "BBTimer.h"
+#include <mbed.h>
+
+const int pinADC = A0;
+mbed::PwmOut pwmSalida(digitalPinToPinName(D2));
+String data = "";
+
+// VARIABLES DEL TIMER //
+BBTimer miTimer(BB_TIMER3);
+volatile bool flagTimer = false;
+
+void callbackTimer() {
+  flagTimer = true;
+}
+
+void setup() {
+  Serial.begin(9600);
+  delay(1000);
+
+  pwmSalida.period_us(200);
+  pwmSalida.write(0.0f);
+
+  analogReadResolution(12);
+}
+
+void enviarADC(){
+  int valorADC = analogRead(pinADC);
+        long tension_mV = ((long)valorADC * 3300) / 4095;
+        char buffer[64];
+        sprintf(buffer, "ADC A0: %4d | Tension aproximada: %ld mV", valorADC, tension_mV);
+        Serial.println(buffer);
+}
+
+void loop() {
+  if (Serial.available()){
+    char c = Serial.read();
+
+    if (c == '\r') {
+      return; 
+    }
+
+    if (c!='\n'){
+      data.concat(c);
+    }
+
+    else{
+      // Ya ha llegado toda la cadena //
+      // PRIMER CASO --> SOLO MANDAR LECTURA DEL ADC //
+      if (data=="ADC"){
+        enviarADC();
+      }
+      // SEGUNDO CASO --> PROGRAMACIÓN DEL TIMER CADA x SEGUNDOS //
+      else if(data.startsWith("ADC(")&&data.endsWith(")")){
+        String xTimer = data.substring(4, data.length()-1);
+        int tiempo = xTimer.toInt();
+
+        miTimer.timerStop();
+        if(tiempo>0){
+          unsigned long periodo = tiempo*1000000UL;
+          miTimer.setupTimer(periodo, callbackTimer);
+          miTimer.timerStart();
+
+        }
+        else{
+          Serial.println("Temporizador detenido");
+        }
+      }
+      else if(data.startsWith("PWM(")&&data.endsWith(")")){
+        String xPWM = data.substring(4, data.length()-1);
+        int x = xPWM.toInt();
+        
+        if(x>=0 && x<=9){
+          float duty = (float)x/9.0f; // Mapea de 0.0 a 1.0 el duty
+          pwmSalida.write(duty);
+        }
+        else{
+          Serial.println("Valor no válido");
+        }
+
+      }
+      else{
+        Serial.print("Comando desconocido ");
+        Serial.print(data);
+      }
+      // Limpiamos el string para el próximo comando
+      data = "";
+
+    }
+  }
+
+  // if para el flag de que ya ha llegado el Timer a x segundos //
+  if(flagTimer){
+    flagTimer = false;
+    enviarADC();
+  }
+}

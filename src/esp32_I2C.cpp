@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+<<<<<<< HEAD
 const uint8_t DIRECCION_I2C = 0x08;
 const uint8_t PIN_SDA = 8;
 const uint8_t PIN_SCL = 9;
@@ -84,4 +85,37 @@ void loop() {
     while (millis() - tiempoInicioLED < 1000);
     digitalWrite(PIN_LED, LOW); // Apagar LED
   }
+=======
+#define DIRECCION_I2C 0x08  // Dirección I2C del ESP32-S3
+#define LED_PIN 10         // Pin donde está conectado el LED
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
+
+  // Inicializa el I2C en modo esclavo con la dirección 0x08
+  Wire.begin(DIRECCION_I2C);
+  
+  Serial.println("ESP32-S3 Esclavo I2C listo (modo loop)...");
+}
+
+void loop() {
+  // Comprobamos si el Maestro ha enviado algún byte al bus
+  if (Wire.available()) {
+    char c = Wire.read();  // Lee el carácter recibido
+    
+    if (c == '1') {
+      digitalWrite(LED_PIN, HIGH);
+      Serial.println("Comando recibido: 1 -> LED encendido");
+    } 
+    else if (c == '0') {
+      digitalWrite(LED_PIN, LOW);
+      Serial.println("Comando recibido: 0 -> LED apagado");
+    }
+  }
+
+  // Pequeña pausa para no saturar el procesador
+  delay(10);
+>>>>>>> 0931406e51cbe9fcc64e29d092f6088f0fdea00c
 }
