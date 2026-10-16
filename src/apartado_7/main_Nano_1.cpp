@@ -3,7 +3,7 @@
  * @brief Práctica 1 - Apartado 7: PLACA 1 Maestro I2C (Arduino Nano 33 BLE).
  * @details Implementa la captura a demanda de la IMU LSM9DS1 (5 muestras tomadas cada 200 ms durante 1 segundo).
  *          Una vez acumuladas las muestras, transmite el bloque de datos completo de 180 bytes por I2C
- *          a la PLACA 2 (ESP32-S3 con dirección 0x08).
+ *          fragmentado en bloques de 30 bytes hacia la PLACA 2 (ESP32-S3 con dirección 0x08).
  * @author Lydia Virto Zardoya
  * @date 24/09/2026
  */
@@ -33,12 +33,12 @@ bool capturando = false;
 
 /**
  * @struct lecturaIMU
- * @brief Estructura de datos para almacenar una captura completa de la IMU de 9 DoF (36 bytes)[cite: 1].
+ * @brief Estructura de datos para almacenar una captura completa de la IMU de 9 DoF (36 bytes).
  */
 struct lecturaIMU {
-  float ax, ay, az; //  Acelerómetro  
-  float gx, gy, gz; //  Giroscopio  
-  float mx, my, mz; //  Magnetómetro   
+  float ax, ay, az; // Acelerómetro  
+  float gx, gy, gz; // Giroscopio  
+  float mx, my, mz; // Magnetómetro   
 };
 
 /** @brief Array para almacenar 5 muestras completas (5 x 36 bytes = 180 bytes en total) */
@@ -87,7 +87,7 @@ void setup() {
  * @brief Bucle principal de ejecución de la PLACA 1.
  * @details Atiende las órdenes del usuario por la UART para iniciar la captura a demanda,
  *          gestiona las lecturas de los 9 sensores cada 200 ms y envía por I2C la estructura 
- *          binaria completa de 180 bytes a la PLACA 2 tras completar el segundo.
+ *          binaria de 180 bytes fragmentada en bloques de máximo 30 bytes hacia la PLACA 2.
  */
 void loop() {
   // 1. Recepción de comando del usuario por UART para iniciar la captura a demanda
@@ -120,22 +120,41 @@ void loop() {
     }
   }
 
-  // 3. Tarea de transmisión I2C (Al completar 1s / 5 muestras)
+  // 3. Tarea de transmisión I2C por ráfagas fragmentadas (Al completar 1s / 5 muestras)
   if (flagEscritura) {
     flagEscritura = false;
 
     timerMuestreo.timerStop();
     capturando = false;
 
-    // Transmisión del bloque binario completo (180 bytes) a la PLACA 2 (0x08)
-    Wire.beginTransmission(DIRECCION_I2C);
-    Wire.write((uint8_t*)sensorData, sizeof(sensorData));
-    uint8_t estado = Wire.endTransmission();
+    uint8_t* ptr = (uint8_t*)sensorData;
+    size_t totalBytes = sizeof(sensorData); // 180 bytes
+    size_t enviado = 0;
+    bool error = false;
 
-    if (estado == 0) {
-      Serial.println(">>> Envío I2C exitoso.");
-    } else {
-      Serial.print(">>> Error I2C: "); Serial.println(estado);
+    // Fragmentación en bloques de máximo 30 bytes
+    while (enviado < totalBytes) {
+      size_t chunk = min((size_t)30, totalBytes - enviado);
+
+      Wire.beginTransmission(DIRECCION_I2C);
+      Wire.write(ptr + enviado, chunk);
+      uint8_t estado = Wire.endTransmission();
+
+      if (estado != 0) {
+        Serial.print(">>> Error I2C en fragmento (bytes ");
+        Serial.print(enviado);
+        Serial.print("-");
+        Serial.print(enviado + chunk);
+        Serial.print("): ");
+        Serial.println(estado);
+        error = true;
+        break;
+      }
+      enviado += chunk;
+    }
+
+    if (!error) {
+      Serial.println(">>> Envío I2C exitoso por ráfagas.");
     }
   }
 }
