@@ -48,7 +48,7 @@ Cada apartado se gestiona de la siguiente forma:
   * `Serial.println(buffer)`: Escribe el valor leído por el terminal.
   * `delay(1000)`: Pausa de $1\text{ s}$ antes de la siguiente lectura.
  
-## Apartado 2: Adquisición Analógica (ADC)
+## Apartado 2: Adquisición Analógica (ADC) temporizada
 * **Descripción:** Configuración de un temporizador por hardware para generar una interrupción periódica. La rutina de servicio (ISR / callback) activa una bandera (flag) que procesa la lectura del ADC en el bucle principal.
 * **Lógica y Funciones:**
   * `analogRead(pinADC)`: Captura el nivel de tensión en el pin analógico.
