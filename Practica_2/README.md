@@ -45,7 +45,7 @@ Practica_2/
 
 ## Apartado 2: Uso de tareas para la lectura y escritura de un sensor incercial
 
-### Nodo Esclavo (Arduino Nano 33 BLE)
+### 2.1. Nodo Esclavo (Arduino Nano 33 BLE)
 * **Descripción:** Muestreo rápido de los tres ejes del acelerómetro integrado y atención de peticiones de lectura del maestro I2C mediante interrupciones de hardware.
 * **Lógica y Funciones:**
   * `Wire.begin(DIRECCION_I2C)`: Inicializa el bus I2C configurando la placa Arduino Nano 33 BLE como nodo esclavo en la dirección `0x08`.
@@ -53,7 +53,7 @@ Practica_2/
   * `IMU.readAcceleration(x, y, z)`: Captura en tiempo real los valores de aceleración ($a_x, a_y, a_z$) del sensor inercial.
   * `noInterrupts()` / `interrupts()`: Delimita la sección crítica para garantizar una copia atómica e inmune a interrupciones hacia la variable `volatile`.
 
-### Nodo Maestro (ESP32)
+### 2.2. Nodo Maestro (ESP32)
 * **Descripción:** Lectura periódica vía I2C de los datos inerciales procedentes del Nano 33 BLE y escritura de las muestras vía terminal. Asimismo, se incluye una notificación visual en un LED con temporización.
 * **Lógica y Funciones:**
   * `Wire.begin(PIN_SDA, PIN_SCL, 100000)`: Configura el ESP32 como Maestro I2C utilizando los pines GPIO 8 (SDA) y GPIO 9 (SCL) a una frecuencia de 100 kHz.
