@@ -43,23 +43,21 @@ Practica_2/
   * `Serial.println("Hola mundo")`: Transmite la cadena de texto por el puerto serie cada segundo desde `Tarea1`.
   * `digitalWrite(PIN_LED, estado)`: Conmuta el estado lógico del pin GPIO 10 cada 200 ms desde `Tarea2`.
 
-## Apartado 2: Esclavo I2C y Captura Inercial (Arduino Nano 33 BLE)
+## Apartado 2: Uso de tareas para la lectura y escritura de un sensor incercial
 
-* **Descripción:** Muestreo rápido de los tres ejes del acelerómetro integrado (`LSM9DS1`) y atención de peticiones de lectura del maestro I2C mediante interrupciones de hardware en modo seguro[cite: 1].
+### Nodo Esclavo (Arduino Nano 33 BLE)
+* **Descripción:** Muestreo rápido de los tres ejes del acelerómetro integrado y atención de peticiones de lectura del maestro I2C mediante interrupciones de hardware.
 * **Lógica y Funciones:**
-  * `Wire.begin(DIRECCION_I2C)`: Inicializa el bus I2C configurando la placa Arduino Nano 33 BLE como nodo esclavo en la dirección `0x08`[cite: 1].
-  * `Wire.onRequest(atenderPeticion)`: Registra la función callback de interrupción que responde enviando la estructura de datos `muestraActual`[cite: 1].
-  * `IMU.readAcceleration(x, y, z)`: Captura en tiempo real los valores de aceleración ($a_x, a_y, a_z$) del sensor inercial[cite: 1].
-  * `noInterrupts()` / `interrupts()`: Delimita la sección crítica para garantizar una copia atómica e inmune a interrupciones hacia la variable `volatile`[cite: 1].
+  * `Wire.begin(DIRECCION_I2C)`: Inicializa el bus I2C configurando la placa Arduino Nano 33 BLE como nodo esclavo en la dirección `0x08`.
+  * `Wire.onRequest(atenderPeticion)`: Registra la función callback de interrupción que responde enviando la estructura de datos `muestraActual`.
+  * `IMU.readAcceleration(x, y, z)`: Captura en tiempo real los valores de aceleración ($a_x, a_y, a_z$) del sensor inercial.
+  * `noInterrupts()` / `interrupts()`: Delimita la sección crítica para garantizar una copia atómica e inmune a interrupciones hacia la variable `volatile`.
 
----
-
-### Apartado 2: Maestro I2C y Control Temporizado (ESP32)
-
-* **Descripción:** Lectura periódica vía I2C de la ráfaga de datos inerciales procedentes del Nano 33 BLE y notificación visual en un LED con temporización estricta libre de deriva temporal mediante FreeRTOS[cite: 1, 2].
+### Nodo Maestro (ESP32)
+* **Descripción:** Lectura periódica vía I2C de los datos inerciales procedentes del Nano 33 BLE y escritura de las muestras vía terminal. Asimismo, se incluye una notificación visual en un LED con temporización.
 * **Lógica y Funciones:**
-  * `Wire.begin(PIN_SDA, PIN_SCL, 100000)`: Configura el ESP32 como Maestro I2C utilizando los pines GPIO 8 (SDA) y GPIO 9 (SCL) a una frecuencia de 100 kHz[cite: 1, 2].
-  * `Wire.requestFrom(DIRECCION_ESCLAVO, sizeof(acel_leida))`: Solicita al esclavo `0x08` la transmisión directa de los 12 bytes correspondientes a la lectura de aceleración[cite: 1, 2].
-  * `Wire.readBytes(...)`: Lee el buffer I2C y vuelca la ráfaga binaria directamente en la estructura de datos local[cite: 2].
-  * `vTaskDelayUntil(&xLastWakeTime, xPeriodo)`: Bloquea la tarea considerando el instante inicial del ciclo, asegurando un periodo exacto de 1 segundo sin acumulación de error de reloj[cite: 1, 2].
+  * `Wire.begin(PIN_SDA, PIN_SCL, 100000)`: Configura el ESP32 como Maestro I2C utilizando los pines GPIO 8 (SDA) y GPIO 9 (SCL) a una frecuencia de 100 kHz.
+  * `Wire.requestFrom(DIRECCION_ESCLAVO, sizeof(acel_leida))`: Solicita al esclavo `0x08` la transmisión directa de los 12 bytes correspondientes a la lectura de aceleración.
+  * `Wire.readBytes(...)`: Lee el buffer I2C y vuelca la ráfaga binaria directamente en la estructura de datos local.
+  * `vTaskDelayUntil(&xLastWakeTime, xPeriodo)`: Bloquea la tarea considerando el instante inicial del ciclo, asegurando un periodo exacto de 1 segundo sin acumulación de error de reloj.
 
