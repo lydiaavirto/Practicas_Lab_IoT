@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../../../PlatformIO/Projects/Practica1_1"
+		},
+		{
+			"name": "Practica2_Iot",
+			"path": "../../../PlatformIO/Projects/Practica2_Iot"
+		},
+		{
+			"name": "Practica3_IoT",
+			"path": "../../../PlatformIO/Projects/Practica3_IoT"
+		}
+	],
+	"settings": {}
+}
