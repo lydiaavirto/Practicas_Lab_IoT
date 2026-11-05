@@ -18,7 +18,7 @@ Este repositorio contiene el código fuente y scripts desarrollados para las pr�
 ```
 ## Resumen de Prácticas
 
-### Práctica 1: Arquitectura y Periféricos (Arduino Nano 33 BLE)
+### Práctica 1: Arquitectura Arduino Nano 33 sense BLE y Comunicación I2C con ESP32-S3
 * **Objetivo:** Control e interconexión de periféricos a bajo nivel en el microcontrolador.
 * **Contenido:** Lectura analógica (ADC), generación de señales PWM, uso de temporizadores hardware (`BBTimer`), gestión de comandos por UART, comunicación I2C entre placas y muestreo del sensor inercial IMU LSM9DS1.
 
