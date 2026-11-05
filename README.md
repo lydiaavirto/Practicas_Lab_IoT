@@ -22,7 +22,7 @@ Este repositorio contiene el código fuente y scripts desarrollados para las pr�
 * **Objetivo:** Control e interconexión de periféricos a bajo nivel en el microcontrolador.
 * **Contenido:** Lectura analógica (ADC), generación de señales PWM, uso de temporizadores hardware (`BBTimer`), gestión de comandos por UART, comunicación I2C entre placas y muestreo del sensor inercial IMU LSM9DS1.
 
-### Práctica 2: Sistemas Operativos en Tiempo Real - RTOS (ESP32)
+### Práctica 2: Diseño de firmware basado en sistema operativo de tiempo real (RTOS) con ESP32
 * **Objetivo:** Diseño de firmware concurrente en ESP32 utilizando el sistema operativo FreeRTOS.
 * **Contenido:** Creación y gestión de tareas independientes (control de LEDs, lectura periódica de sensores inerciales y temporización de transmisiones serie).
 
