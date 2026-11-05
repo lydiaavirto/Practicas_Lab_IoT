@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		},
+		{
+			"name": "Practica_3",
+			"path": "../../../Practica_3"
+		},
+		{
+			"name": "Practica_4",
+			"path": "../.."
+		}
+	],
+	"settings": {}
+}

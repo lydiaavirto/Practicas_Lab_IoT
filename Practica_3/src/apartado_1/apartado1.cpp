@@ -2,8 +2,8 @@
 #include <WiFi.h>
 #include <ESP32Ping.h>
 
-const char* ssid     = "HONOR de Lydia";
-const char* password = "123456788";
+const char* ssid     = "NOMBRE WIFI";
+const char* password = "CONTRASEÑA";
 
 const char* remote_host = "www.google.com";
 

@@ -12,20 +12,20 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
-            "executable": "C:/Users/lyvir/OneDrive/Documentos/PlatformIO/Projects/Practica3_IoT/.pio/build/esp32-s3-devkitc-1/firmware.elf",
+            "executable": "C:/Users/lyvir/OneDrive/Documentos/PlatformIO/Projects/Practica_3/.pio/build/esp32-s3-devkitc-1/firmware.elf",
             "projectEnvName": "esp32-s3-devkitc-1",
             "toolchainBinDir": "C:/Users/lyvir/.platformio/packages/toolchain-xtensa-esp32s3/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "preLaunchTask": {
                 "type": "PlatformIO",
-                "task": "Pre-Debug"
+                "task": "Pre-Debug (esp32-s3-devkitc-1)"
             }
         },
         {
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "C:/Users/lyvir/OneDrive/Documentos/PlatformIO/Projects/Practica3_IoT/.pio/build/esp32-s3-devkitc-1/firmware.elf",
+            "executable": "C:/Users/lyvir/OneDrive/Documentos/PlatformIO/Projects/Practica_3/.pio/build/esp32-s3-devkitc-1/firmware.elf",
             "projectEnvName": "esp32-s3-devkitc-1",
             "toolchainBinDir": "C:/Users/lyvir/.platformio/packages/toolchain-xtensa-esp32s3/bin",
             "internalConsoleOptions": "openOnSessionStart"
@@ -34,7 +34,7 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (without uploading)",
-            "executable": "C:/Users/lyvir/OneDrive/Documentos/PlatformIO/Projects/Practica3_IoT/.pio/build/esp32-s3-devkitc-1/firmware.elf",
+            "executable": "C:/Users/lyvir/OneDrive/Documentos/PlatformIO/Projects/Practica_3/.pio/build/esp32-s3-devkitc-1/firmware.elf",
             "projectEnvName": "esp32-s3-devkitc-1",
             "toolchainBinDir": "C:/Users/lyvir/.platformio/packages/toolchain-xtensa-esp32s3/bin",
             "internalConsoleOptions": "openOnSessionStart",

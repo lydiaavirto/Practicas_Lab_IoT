@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ESP32 Web Server</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f2f5;
+      margin-top: 50px;
+    }
+    #reloj {
+      font-size: 3.5rem;
+      color: #2c3e50;
+      margin: 20px 0;
+    }
+    button {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #c0392b;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>ESP32 Web Server</h1>
+  <h1 id="reloj">00:00:00</h1>
+  <button onclick="resetearHora()">Resetear Hora</button>
+
+  <script>
+    function pedirHora() {
+      fetch('/hora')
+        .then(respuesta => respuesta.text())
+        .then(horaTexto => {
+          document.getElementById('reloj').innerText = horaTexto;
+        });
+    }
+
+    function resetearHora() {
+      fetch('/reset', { method: 'POST' })
+        .then(() => pedirHora());
+    }
+
+    setInterval(pedirHora, 1000);
+    pedirHora();
+  </script>
+</body>
+</html>

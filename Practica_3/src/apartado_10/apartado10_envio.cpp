@@ -3,8 +3,8 @@
 #include <PubSubClient.h>
 
 // Credenciales Wi-Fi
-const char* ssid     = "HONOR de Lydia";
-const char* password = "123456788";
+const char* ssid     = "NOMBRE WIFI";
+const char* password = "CONTRASEÑA";
 
 // Credenciales Adafruit
 const char* username     = "lydiaavirto";

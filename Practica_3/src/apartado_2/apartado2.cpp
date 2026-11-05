@@ -3,8 +3,8 @@
 #include <time.h>
 
 // Credenciales Wi-Fi
-const char* ssid     = "HONOR de Lydia";
-const char* password = "123456788";
+const char* ssid     = "NOMBRE WIFI";
+const char* password = "CONTRASE�A";
 
 // Servidores NTP y Zona Horaria (España - Península)
 const char* ntpServer1 = "pool.ntp.org";
