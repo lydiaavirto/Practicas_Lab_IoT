@@ -26,11 +26,11 @@ Este repositorio contiene el código fuente y scripts desarrollados para las pr�
 * **Objetivo:** Diseño de firmware concurrente en ESP32 utilizando el sistema operativo FreeRTOS.
 * **Contenido:** Creación y gestión de tareas independientes (control de LEDs, lectura periódica de sensores inerciales y temporización de transmisiones serie).
 
-### Práctica 3: Comunicaciones WiFi (ESP32)
+### Práctica 3: Comunicaciones Wi-Fi con ESP32
 * **Objetivo:** Implementación de comunicaciones a bajo nivel y protocolos de capa de aplicación.
 * **Contenido:** Conexión a redes WiFi, sincronización horaria mediante NTP, comunicación por sockets TCP, servidor web, generación y subida de ficheros JSON (estándar SenML) y publicación/suscripción MQTT en Adafruit IO.
 
-### Práctica 4: Bluetooth Low Energy (BLE) y Bluetooth Classic
+### Práctica 4: Comunicaciones Bluetooth Low Energy (BLE) y Bluetooth Classic
 * **Objetivo:** Configuración y gestión de perfiles de comunicación inalámbrica Bluetooth.
 * **Contenido:** Servidor GATT en Arduino Nano 33 BLE con UUID personalizado, control de LED RGB mediante características de lectura/escritura, transmisión de datos del acelerómetro por notificaciones y pasarela de chat por Bluetooth Classic en ESP32.
 
