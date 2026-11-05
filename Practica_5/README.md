@@ -39,7 +39,7 @@ Implementación de un sistema completo de adquisición, almacenamiento y visuali
   * `IMU.readAcceleration()`, `IMU.readGyroscope()`, `IMU.readMagneticField()`: Lectura síncrona de los ejes triaxiales del sensor inercial.
   * `Serial.print(...)`: Emisión estructurada por puerto serie a 9600 baudios de la ráfaga de 10 capturas al completar cada segundo.
  
-## Apartado 2: Lectura en Tiempo Real por Puerto Serie
+## Apartado 2: Lectura en Tiempo Real por Puerto Serie (`lectura.py`)
 * **Descripción:** Script de Python desarrollado con la librería `pyserial` para establecer comunicación serie síncrona a 115200 baudios con la placa Arduino Nano 33 BLE, capturando e imprimiendo las lecturas recibidas por consola en tiempo real.
 * **Lógica y Funciones:**
   * `serial.Serial(puerto, baudios, timeout=1)`: Abre e inicializa la conexión con el puerto serie indicado (`COM3`) a 115200 baudios con tiempo de espera de lectura.
@@ -48,7 +48,7 @@ Implementación de un sistema completo de adquisición, almacenamiento y visuali
   * `.decode('utf-8', errors='ignore').strip()`: Decodifica el flujo de bytes a texto UTF-8 ignorando fallos de conversión y elimina espacios o caracteres especiales.
   * `try / except KeyboardInterrupt / finally`: Controla excepciones e interrupciones del teclado (`Ctrl+C`), garantizando la liberación y cierre del puerto con `conexion.close()`.
 
-## Apartado 3: Almacenamiento de Datos Serie en Fichero CSV/TXT
+## Apartado 3: Almacenamiento de Datos Serie en Fichero CSV/TXT (`lecturaConTXT.py`)
 * **Descripción:** Script de Python para la captura de lecturas inerciales transmitidas por el puerto serie y su almacenamiento en tiempo real en un archivo de texto (`datos_acelerometro.txt`), estructurado con punto y coma (`;`) como delimitador para su posterior análisis e importación en Excel.
 * **Lógica y Funciones:**
   * `open(NOMBRE_ARCHIVO, "w", encoding="utf-8")`: Abre o crea el archivo destino en modo escritura (`w`).
