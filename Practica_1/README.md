@@ -53,7 +53,7 @@ Cada apartado se gestiona de la siguiente forma:
 * **Lógica y Funciones:**
   * `analogRead(pinADC)`: Captura el nivel de tensión en el pin analógico.
   * `volatile bool flagTimer`: 	Volatile flag para sincronización entre la ISR y el bucle principal.
-  * `	callbackTimer()`: Rutina de servicio de la interrupción (Callback) del temporizador. Se ejecuta de forma que cada vez que el temporizador hardware alcanza el tiempo programado, activa la bandera de sincronización.
+  * `callbackTimer()`: Rutina de servicio de la interrupción (Callback) del temporizador. Se ejecuta de forma que cada vez que el temporizador hardware alcanza el tiempo programado, activa la bandera de sincronización.
   * `miTimer.setupTimer(10000000, callbackTimer)`: Configura el timer para saltar cada 10.000.000 us (10 segundos).
   * `miTimer.timerStart()`: Inicia el temporizador de hardware.
   * `if (flagTimer)`: Cuando transcurren los 10 segundos, se activa la bandera desde la ISR y ejecuta la tarea.
