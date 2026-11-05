@@ -1,4 +1,4 @@
-# Práctica 5: Comunicación, Gestión y Representación de Datos de Sensores con Python
+# Práctica 5: Adquisición y Visualización de Datos con Python
 
 ---
 
