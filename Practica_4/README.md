@@ -1,4 +1,4 @@
-# Práctica 4: Comunicaciones Bluetooth Low Energy (BLE) y Bluetooth
+# Práctica 4: Comunicaciones Bluetooth Low Energy (BLE) y Bluetooth Classic
 
 ---
 
